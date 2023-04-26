@@ -93,9 +93,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.initialcmc"
+    namespace "com.cmcexpoapp"
     defaultConfig {
-        applicationId "com.initialcmc"
+        applicationId "com.cmcexpoapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
