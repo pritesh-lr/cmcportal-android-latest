@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useRef, Fragment} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import React, { useState, useEffect, useRef, Fragment } from "react";
+import { createStackNavigator } from "@react-navigation/stack";
 
 import {
   Image,
@@ -8,18 +8,18 @@ import {
   TouchableOpacity,
   View,
   Modal,
-} from 'react-native';
-import {WebView} from 'react-native-webview';
-import styles from './DashBoardStyle';
+} from "react-native";
+import { WebView } from "react-native-webview";
+import styles from "./DashBoardStyle";
 
-import RNFetchBlob from 'rn-fetch-blob';
-var RNFS = require('react-native-fs');
-import FileViewer from 'react-native-file-viewer';
-import DocumentPicker from 'react-native-document-picker';
-import CookieManager from 'react-native-cookies';
-import {unzip} from 'react-native-zip-archive';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import BottomTabNavigator from '../navigation/BottomTabNavigator';
+import RNFetchBlob from "rn-fetch-blob";
+var RNFS = require("react-native-fs");
+import FileViewer from "react-native-file-viewer";
+import DocumentPicker from "react-native-document-picker";
+import CookieManager from "react-native-cookies";
+import { unzip } from "react-native-zip-archive";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import BottomTabNavigator from "../navigation/BottomTabNavigator";
 const Stack = createStackNavigator();
 export default function Dashboard() {
   const [url, setUrl] = useState(`https://www.countymaterials.com/sso`);
@@ -31,19 +31,19 @@ export default function Dashboard() {
 
   const webviewRef = useRef(null);
 
-  const storeData = async value => {
+  const storeData = async (value) => {
     try {
       // const jsonValue = JSON.stringify(value)
-      AsyncStorage.setItem('@storage_Key', `${value}`);
-      let user = await AsyncStorage.getItem('@storage_Key');
-      console.log('user', user);
+      AsyncStorage.setItem("@storage_Key", `${value}`);
+      let user = await AsyncStorage.getItem("@storage_Key");
+      console.log("user", user);
     } catch (e) {
       // saving error
     }
   };
 
   useEffect(() => {
-    CookieManager.get('https://www.countymaterials.com').then(res => {
+    CookieManager.get("https://www.countymaterials.com").then((res) => {
       setAuthToken(res.auth_token); // => 'user_session=abcdefg; path=/;'
     });
   });
@@ -51,26 +51,15 @@ export default function Dashboard() {
   const handleReload = () => {
     setReload(!reload);
     setUrl(
-      `https://www.countymaterials.com/en/portal-dashbaord?${Math.random()}`,
+      `https://www.countymaterials.com/en/portal-dashbaord?${Math.random()}`
     );
   };
 
   function handleUrlWithZip(input, authToken) {
-    const directoryFile = RNFS.DocumentDirectoryPath + '/DownloadFile';
+    const directoryFile = RNFS.DocumentDirectoryPath + "/DownloadFile";
 
     //Creating folder
     if (!RNFS.exists(directoryFile)) {
-      // console.log("file is exist", directoryFile);
-      // RNFS.unlink(directoryFile)
-      // .then(() => {
-      //   console.log('FOLDER/FILE DELETED');
-      // })
-      // // `unlink` will throw an error, if the item to unlink does not exist
-      // .catch((err) => {
-      //   console.log('CANT DELETE', err.message);
-      //   this.setState({ showError: true })
-      // });
-
       RNFS.mkdir(directoryFile);
     }
 
@@ -79,14 +68,14 @@ export default function Dashboard() {
       const urlDownload = input;
       let fileName;
       try {
-        fileName = urlDownload.substr(urlDownload.lastIndexOf('/')) + '.zip';
+        fileName = urlDownload.substr(urlDownload.lastIndexOf("/")) + ".zip";
 
         if (fileName) {
           setTimeout(() => setModal(true), 3000);
         }
       } catch (e) {
         console.log(e);
-        fileName = 'example.zip';
+        fileName = "example.zip";
       }
 
       let dirs = directoryFile + fileName;
@@ -96,30 +85,29 @@ export default function Dashboard() {
         trusty: true,
         fileCache: true,
       })
-        .fetch('GET', urlDownload, {
+        .fetch("GET", urlDownload, {
           //some headers ..
           Authorization: `Basic ${authToken}`,
         })
         .progress((received, total) => {
-          console.log('directory is:', dirs);
-          console.log('authToken', authToken);
-          console.log('progress', received / total);
+          console.log("directory is:", dirs);
+          console.log("authToken", authToken);
+          console.log("progress", received / total);
         })
-        .then(res => {
-          console.log('The file saved to ', res.path());
-          console.log('The file saved to directoryFile', directoryFile);
+        .then((res) => {
+          console.log("The file saved to ", res.path());
+          console.log("The file saved to directoryFile", directoryFile);
 
-          unzip(res.path(), directoryFile, 'UTF-8')
-            .then(path => {
-              console.log('unzip completed at', path);
+          unzip(res.path(), directoryFile, "UTF-8")
+            .then((path) => {
+              console.log("unzip completed at", path);
             })
-            .catch(error => {
-              console.error('unzip error', error);
+            .catch((error) => {
+              console.error("unzip error", error);
             });
         });
     }
     hideSpinner();
-    // setTimeout(() => Toast.show('Successfully downloaded. Use the Files App to view under: On My iPhone > CMC Portal App. See the info tab for more information.', Toast.LONG), 2000)
   }
 
   const backButtonHandler = () => {
@@ -137,7 +125,7 @@ export default function Dashboard() {
       });
       await FileViewer.open(res.uri);
     } catch (e) {
-      console.log('error --->', e);
+      console.log("e", e);
     }
   };
 
@@ -188,53 +176,11 @@ export default function Dashboard() {
   }
 
   async function handleLinkPress(url) {
-    console.log('here');
-    const fileLink = url.split('/');
-    // console.log("handellink press url ------>", url);
+    const fileLink = url.split("/");
     if (
-      fileLink[fileLink.length - 1] === 'file' ||
-      url.includes('view=download')
+      fileLink[fileLink.length - 1] === "file" ||
+      url.includes("view=download")
     ) {
-      console.log('main iff');
-      // if(Platform.OS === 'ios'){
-      // 	OpenFile.openDoc([{
-      // 	  url: "http://www.africau.edu/images/default/sample.pdf",
-      // 	  fileNameOptional:"test filename"
-      // 	}], (error, url) => {
-      // 	   if (error) {
-      // 		console.log("errror ---->", error);
-      // 	   } else {
-      // 		 console.log(url)
-      // 	   }
-      // 	 })
-      //   }else{
-      // RNFetchBlob.fs.ls(TRACK_FOLDER)
-      // .then( (files) =>{
-      // 	console.log("files.length --->", files.length);
-      // 	console.log("files ---->", files);
-      // 	//console.log("files[0] ---->", files[0]);
-      // })
-      //console.log(decodedString);
-      //Android
-      //this.setState({animating: true});
-      // OpenFile.openDoc([{
-      //   url: "http://www.africau.edu/images/default/sample.pdf",
-      //   fileName:"sample",
-      //   cache:false,
-      //   fileType:"pdf"
-      // }], (error, url) => {
-      //    if (error) {
-      // 	//this.setState({animating: false});
-      // 	 console.error(error);
-      //    } else {
-      // 	//this.setState({animating: false});
-      // 	 console.log(url)
-      //    }
-      //  })
-      // }
-      //  setTimeout(() => setModal(true), 3000)
-    } else {
-      console.log('setcurrent url else');
     }
   }
 
@@ -245,65 +191,43 @@ export default function Dashboard() {
           {visible && loaded.current && (
             <View
               style={{
-                backgroundColor: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100%',
-                width: '100%',
-              }}>
+                backgroundColor: "white",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+                width: "100%",
+              }}
+            >
               <Image
-                source={require('../assets/images/giphy.gif')}
-                style={{height: 200, width: 200}}
+                source={require("../assets/images/giphy.gif")}
+                style={{ height: 200, width: 200 }}
               />
-
-              {/* <ActivityIndicator
-          style={{ position: "absolute",  height: 100, width: 100}}
-          size="large"
-        /> */}
             </View>
           )}
-          {/* <WebView
-					javaScriptEnabled={true}
-					domStorageEnabled={true}
-					mixedContentMode={'compatibility'}
-					injectedJavaScript={customScript}
-					source={{ uri: `${url}` }}
-					startInLoadingState={true}
-					onLoadStart={() => { setVisible(true) }}
-					ref={webviewRef}
-					onNavigationStateChange={navState => {
-						setCanGoBack(navState.canGoBack)
-						setCanGoForward(navState.canGoForward)
-						handleLinkPress(navState.url)
-					}}
-					onLoad={hideSpinner}
-					allowUniversalAccessFromFileURLs={true}
-					// onShouldStartLoadWithRequest={true}
-				/> */}
           <WebView
             javaScriptEnabled={true}
             domStorageEnabled={true}
-            mixedContentMode={'compatibility'}
+            mixedContentMode={"compatibility"}
             startInLoadingState={true}
             ref={webviewRef}
             onLoadStart={() => {
               setVisible(true);
             }}
-            source={{uri: `${url}`}}
+            source={{ uri: `${url}` }}
             // onNavigationStateChange={handleWebViewNavigationStateChange}
             injectedJavaScript={customScript}
             allowUniversalAccessFromFileURLs={true}
             allowFileAccessFromFileURLs={true}
             onLoad={hideSpinner}
-            onShouldStartLoadWithRequest={request => {
+            onShouldStartLoadWithRequest={(request) => {
               // Only allow navigating within this website
-              console.log('Getting requested url is:', request.url);
+              console.log("Getting requested url is:", request.url);
               handleLinkPress(request.url);
               return true;
             }}
-            onFileDownload={({nativeEvent: {downloadUrl}}) => {
-              console.log('Contents Data :', downloadUrl);
+            onFileDownload={({ nativeEvent: { downloadUrl } }) => {
+              console.log("Contents Data :", downloadUrl);
               handleUrlWithZip(downloadUrl, authToken);
             }}
             onMessage={() => customScript}
@@ -313,8 +237,8 @@ export default function Dashboard() {
         <View style={styles.tabBarContainer}>
           <TouchableOpacity onPress={backButtonHandler}>
             <Image
-              source={require('../assets/images/arrow-back.png')}
-              style={{width: 24, height: 24}}
+              source={require("../assets/images/arrow-back.png")}
+              style={{ width: 24, height: 24 }}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleReload}>
@@ -322,8 +246,8 @@ export default function Dashboard() {
           </TouchableOpacity>
           <TouchableOpacity onPress={reloadButtonHandler}>
             <Image
-              source={require('../assets/images/refresh.png')}
-              style={{width: 24, height: 24}}
+              source={require("../assets/images/refresh.png")}
+              style={{ width: 24, height: 24 }}
             />
           </TouchableOpacity>
         </View>
@@ -333,26 +257,26 @@ export default function Dashboard() {
               <View style={styless.centeredView}>
                 <View style={styless.modalView}>
                   <Text
-                    style={
-                      styless.modalText
-                    }>{`File downloaded to your device`}</Text>
+                    style={styless.modalText}
+                  >{`File downloaded to your device`}</Text>
                   <View
                     style={{
-                      flexDirection: 'row',
-                      alignSelf: 'flex-end',
+                      flexDirection: "row",
+                      alignSelf: "flex-end",
                       marginRight: 0,
                       paddingLeft: 15,
                       paddingRight: 5,
-                      justifyContent: 'space-between',
-                      display: 'flex',
-                    }}>
+                      justifyContent: "space-between",
+                      display: "flex",
+                    }}
+                  >
                     <TouchableOpacity onPress={() => openLocalStorage()}>
-                      <Text style={{color: 'blue', paddingRight: 15}}>
+                      <Text style={{ color: "blue", paddingRight: 15 }}>
                         View File
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setModal(false)}>
-                      <Text style={{color: 'blue'}}>Close</Text>
+                      <Text style={{ color: "blue" }}>Close</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -365,7 +289,7 @@ export default function Dashboard() {
               <Stack.Screen
                 name="County Connect"
                 component={BottomTabNavigator}
-                options={{headerTitleAlign: 'center'}}
+                options={{ headerTitleAlign: "center" }}
               />
             </Stack.Navigator>
             {/* </NavigationContainer> */}
@@ -379,20 +303,20 @@ export default function Dashboard() {
 const styless = StyleSheet.create({
   centeredView: {
     flex: 1,
-    position: 'absolute',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: "absolute",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalView: {
     margin: 50,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     //   alignItems: "center",
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -403,6 +327,6 @@ const styless = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

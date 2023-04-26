@@ -1,15 +1,15 @@
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import * as React from 'react';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import * as React from "react";
 
-import TabBarIcon from '../components/TabBarIcon';
-import Info from '../screen/Info';
-import DashBoard from '../screen/Dashboard';
+import TabBarIcon from "../components/TabBarIcon";
+import Info from "../screen/Info";
+import DashBoard from "../screen/Dashboard";
 
 const BottomTab = createBottomTabNavigator();
-const INITIAL_ROUTE_NAME = 'Home';
+const INITIAL_ROUTE_NAME = "Home";
 
-export default function BottomTabNavigator({navigation, route}) {
-  navigation.setOptions({headerTitle: getHeaderTitle(route)});
+export default function BottomTabNavigator({ navigation, route }) {
+  navigation.setOptions({ headerTitle: getHeaderTitle(route) });
 
   return (
     <BottomTab.Navigator initialRouteName={INITIAL_ROUTE_NAME}>
@@ -17,8 +17,9 @@ export default function BottomTabNavigator({navigation, route}) {
         name="Dashboard"
         component={DashBoard}
         options={{
-          title: 'Portal',
-          tabBarIcon: ({focused}) => (
+          title: "Portal",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} name="list" />
           ),
         }}
@@ -27,8 +28,9 @@ export default function BottomTabNavigator({navigation, route}) {
         name="Info"
         component={Info}
         options={{
-          title: 'Info',
-          tabBarIcon: ({focused}) => (
+          title: "Info",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} name="info-circle" />
           ),
         }}
@@ -42,9 +44,9 @@ function getHeaderTitle(route) {
     route.state?.routes[route.state.index]?.name ?? INITIAL_ROUTE_NAME;
 
   switch (routeName) {
-    case 'Home':
-      return 'County Connect';
-    case 'DashBoard':
-      return 'Portal';
+    case "Home":
+      return "County Connect";
+    case "DashBoard":
+      return "Portal";
   }
 }
