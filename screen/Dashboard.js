@@ -16,7 +16,7 @@ import RNFetchBlob from "rn-fetch-blob";
 var RNFS = require("react-native-fs");
 import FileViewer from "react-native-file-viewer";
 import DocumentPicker from "react-native-document-picker";
-import CookieManager from "react-native-cookies";
+import CookieManager from "../utils/react-native-cookies";
 import { unzip } from "react-native-zip-archive";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomTabNavigator from "../navigation/BottomTabNavigator";

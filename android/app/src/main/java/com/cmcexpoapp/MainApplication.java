@@ -13,6 +13,7 @@ import com.vinzscam.reactnativefileviewer.RNFileViewerPackage;
 import com.rnfs.RNFSPackage;
 import com.reactnativerestart.RestartPackage;
 import com.brentvatne.react.ReactVideoPackage;
+import com.psykar.cookiemanager.CookieManagerPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
