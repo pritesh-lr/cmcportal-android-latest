@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  Platform,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import styles from "./DashBoardStyle";
@@ -21,12 +22,16 @@ import { unzip } from "react-native-zip-archive";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomTabNavigator from "../navigation/BottomTabNavigator";
 const Stack = createStackNavigator();
+
+const { dirs } = RNFetchBlob.fs;
+
 export default function Dashboard() {
   const [url, setUrl] = useState(`https://www.countymaterials.com/sso`);
   const [reload, setReload] = useState(false);
   const [visible, setVisible] = useState(true);
   const [modal, setModal] = useState(false);
   const [authToken, setAuthToken] = useState(undefined);
+  const [cookie,setCookie] = useState("");
   const loaded = useRef(null);
 
   const webviewRef = useRef(null);
@@ -44,7 +49,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     CookieManager.get("https://www.countymaterials.com").then((res) => {
-      setAuthToken(res.auth_token); // => 'user_session=abcdefg; path=/;'
+      setAuthToken(res);
     });
   });
 
@@ -54,61 +59,6 @@ export default function Dashboard() {
       `https://www.countymaterials.com/en/portal-dashbaord?${Math.random()}`
     );
   };
-
-  function handleUrlWithZip(input, authToken) {
-    const directoryFile = RNFS.DocumentDirectoryPath + "/DownloadFile";
-
-    //Creating folder
-    if (!RNFS.exists(directoryFile)) {
-      RNFS.mkdir(directoryFile);
-    }
-
-    // If folder is created
-    if (input) {
-      const urlDownload = input;
-      let fileName;
-      try {
-        fileName = urlDownload.substr(urlDownload.lastIndexOf("/")) + ".zip";
-
-        if (fileName) {
-          setTimeout(() => setModal(true), 3000);
-        }
-      } catch (e) {
-        console.log(e);
-        fileName = "example.zip";
-      }
-
-      let dirs = directoryFile + fileName;
-      RNFetchBlob.config({
-        // response data will be saved to this path if it has access right.
-        path: dirs,
-        trusty: true,
-        fileCache: true,
-      })
-        .fetch("GET", urlDownload, {
-          //some headers ..
-          Authorization: `Basic ${authToken}`,
-        })
-        .progress((received, total) => {
-          console.log("directory is:", dirs);
-          console.log("authToken", authToken);
-          console.log("progress", received / total);
-        })
-        .then((res) => {
-          console.log("The file saved to ", res.path());
-          console.log("The file saved to directoryFile", directoryFile);
-
-          unzip(res.path(), directoryFile, "UTF-8")
-            .then((path) => {
-              console.log("unzip completed at", path);
-            })
-            .catch((error) => {
-              console.error("unzip error", error);
-            });
-        });
-    }
-    hideSpinner();
-  }
 
   const backButtonHandler = () => {
     if (webviewRef.current) webviewRef.current.goBack();
@@ -176,11 +126,91 @@ export default function Dashboard() {
   }
 
   async function handleLinkPress(url) {
-    const fileLink = url.split("/");
-    if (
-      fileLink[fileLink.length - 1] === "file" ||
-      url.includes("view=download")
-    ) {
+    console.log("Getting requested url is:", request.url);
+    // const fileLink = url.split("/");
+    // if (fileLink[fileLink.length - 1] === "file") {
+    //   const { dirs } = RNFetchBlob.fs;
+    //   const dirToSave =
+    //     Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
+    //   const fileName = `${fileLink[fileLink.length - 2]}.pdf`;
+    //   const configs = {
+    //     useDownloadManager: false,
+    //     notification: true,
+    //     mediaScannable: true,
+    //     title: fileName,
+    //     path: `${dirToSave}/${fileName}`,
+    //   };
+    //   const configOptions = Platform.select({
+    //     ios: {
+    //       title: configs.title,
+    //       path: configs.path,
+    //       appendExt: "pdf",
+    //     },
+    //     android: configs,
+    //   });
+
+    //   RNFS.exists(configs?.path).then((exists) => {
+    //     if (exists) {
+    //       console.log("File exists!");
+    //     } else {
+    //       RNFetchBlob.config(configOptions)
+    //         .fetch("GET", url, {
+    //           "content-type": "application/pdf",
+    //         })
+    //         .then((res) => {
+    //           if (Platform.OS === "ios") {
+    //             RNFetchBlob.ios.previewDocument(configs.path);
+    //           }
+    //           if (Platform.OS == "android") {
+    //             console.log("DONWLOAD SUCCESSS");
+    //           }
+    //           console.log("The file saved to ", res);
+    //         });
+    //     }
+    //   });
+    // }
+    if (url.includes("view=download")) {
+      const cookieString = Object.entries(authToken)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("; ");
+      setCookie(cookieString);
+
+      const dirToSave =
+        Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
+      const fileName = `${Math.round(+new Date() / 1000)}.zip`;
+      const configs = {
+        useDownloadManager: false,
+        notification: true,
+        mediaScannable: true,
+        title: fileName,
+        path: `${dirToSave}/${fileName}`,
+      };
+      const configOptions = Platform.select({
+        ios: {
+          title: configs.title,
+          path: configs.path,
+          appendExt: "zip",
+        },
+        android: configs,
+      });
+
+      await RNFS.exists(configs?.path).then(async(exists) => {
+        if (exists) {
+          console.log("File exists!");
+        } else {
+          await RNFetchBlob.config(configOptions)
+            .fetch("GET", url, {})
+            .then((res) => {
+              if (Platform.OS === "ios") {
+                RNFetchBlob.ios.previewDocument(configs.path);
+              }
+              if (Platform.OS == "android") {
+                console.log("DONWLOAD SUCCESSS");
+              }
+              console.log("The file saved to ", res);
+            });
+        }
+      });
     }
   }
 
@@ -214,24 +244,20 @@ export default function Dashboard() {
             onLoadStart={() => {
               setVisible(true);
             }}
-            source={{ uri: `${url}` }}
-            // onNavigationStateChange={handleWebViewNavigationStateChange}
+            source={{
+              uri: url,
+              headers: {
+                Cookie: cookie,
+              },
+            }}
             injectedJavaScript={customScript}
             allowUniversalAccessFromFileURLs={true}
             allowFileAccessFromFileURLs={true}
             onLoad={hideSpinner}
             onShouldStartLoadWithRequest={(request) => {
-              // Only allow navigating within this website
-              console.log("Getting requested url is:", request.url);
               handleLinkPress(request.url);
               return true;
             }}
-            onFileDownload={({ nativeEvent: { downloadUrl } }) => {
-              console.log("Contents Data :", downloadUrl);
-              handleUrlWithZip(downloadUrl, authToken);
-            }}
-            onMessage={() => customScript}
-            // onMessage={customScript}
           />
         </Fragment>
         <View style={styles.tabBarContainer}>
