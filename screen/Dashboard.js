@@ -31,7 +31,6 @@ export default function Dashboard() {
   const [visible, setVisible] = useState(true);
   const [modal, setModal] = useState(false);
   const [authToken, setAuthToken] = useState(undefined);
-  const [cookie,setCookie] = useState("");
   const loaded = useRef(null);
 
   const webviewRef = useRef(null);
@@ -126,7 +125,7 @@ export default function Dashboard() {
   }
 
   async function handleLinkPress(url) {
-    console.log("Getting requested url is:", request.url);
+    console.log("Getting requested url is: ---", url);
     // const fileLink = url.split("/");
     // if (fileLink[fileLink.length - 1] === "file") {
     //   const { dirs } = RNFetchBlob.fs;
@@ -149,11 +148,11 @@ export default function Dashboard() {
     //     android: configs,
     //   });
 
-    //   RNFS.exists(configs?.path).then((exists) => {
+    //   await RNFS.exists(configs?.path).then(async (exists) => {
     //     if (exists) {
     //       console.log("File exists!");
     //     } else {
-    //       RNFetchBlob.config(configOptions)
+    //       await RNFetchBlob.config(configOptions)
     //         .fetch("GET", url, {
     //           "content-type": "application/pdf",
     //         })
@@ -168,13 +167,8 @@ export default function Dashboard() {
     //         });
     //     }
     //   });
-    // }
+    // } else 
     if (url.includes("view=download")) {
-      const cookieString = Object.entries(authToken)
-        .map(([key, value]) => `${key}=${value}`)
-        .join("; ");
-      setCookie(cookieString);
-
       const dirToSave =
         Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
       const fileName = `${Math.round(+new Date() / 1000)}.zip`;
@@ -194,7 +188,7 @@ export default function Dashboard() {
         android: configs,
       });
 
-      await RNFS.exists(configs?.path).then(async(exists) => {
+      await RNFS.exists(configs?.path).then(async (exists) => {
         if (exists) {
           console.log("File exists!");
         } else {
@@ -246,9 +240,6 @@ export default function Dashboard() {
             }}
             source={{
               uri: url,
-              headers: {
-                Cookie: cookie,
-              },
             }}
             injectedJavaScript={customScript}
             allowUniversalAccessFromFileURLs={true}
