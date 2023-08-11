@@ -36,19 +36,18 @@ export default class BackgroundVideo extends Component {
   }
 
   componentDidMount() {
-    console.log("my",this.props.myvalue)
     Animated.timing(this.state.posY, {
       // toValue:Math.round(dimensions.height/2-150),
       toValue:Math.round(dimensions.height/2-150) - (isIphoneX ? 40: 0),
       duration: 500,
+      useNativeDriver:false
     }).start();
     Animated.timing(this.state.posX, {
       // toValue:((dimensions.height/2)/3) - (isIphoneX ? 80 : 0),
       toValue:80,
       duration: 500,
+      useNativeDriver:false,
     }).start();
-    
-    console.log("isIphoneX = ",isIphoneX, ((dimensions.height/2)/3) - (isIphoneX ? 80 : 0), ((dimensions.height/2)/3));
   }
 
   signInClicked = async() => {
@@ -125,7 +124,6 @@ export default class BackgroundVideo extends Component {
     );
   };
   render() {
-    console.log("DAta" ,dimensions.height , " ", dimensions.width);
     return (
       <View>
         <View>

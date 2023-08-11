@@ -9,10 +9,11 @@ import {
   View,
   Modal,
   Platform,
+  Alert,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import styles from "./DashBoardStyle";
-
+import Toast from "react-native-simple-toast";
 import RNFetchBlob from "rn-fetch-blob";
 var RNFS = require("react-native-fs");
 import FileViewer from "react-native-file-viewer";
@@ -34,6 +35,10 @@ export default function Dashboard() {
   const loaded = useRef(null);
 
   const webviewRef = useRef(null);
+
+  useEffect(() => {
+    loaded.current = true;
+  }, []);
 
   const storeData = async (value) => {
     try {
@@ -167,7 +172,7 @@ export default function Dashboard() {
     //         });
     //     }
     //   });
-    // } else 
+    // } else
     if (url.includes("view=download")) {
       const dirToSave =
         Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
@@ -199,7 +204,15 @@ export default function Dashboard() {
                 RNFetchBlob.ios.previewDocument(configs.path);
               }
               if (Platform.OS == "android") {
-                console.log("DONWLOAD SUCCESSS");
+                Toast.show(
+                  `File downloaded ${configs.path}`,
+                  Toast.LONG,
+                  Toast.BOTTOM
+                );
+                Alert.alert(
+                  "Succeed!",
+                  "Your file has been downloaded successfully"
+                );
               }
               console.log("The file saved to ", res);
             });
@@ -225,7 +238,7 @@ export default function Dashboard() {
             >
               <Image
                 source={require("../assets/images/giphy.gif")}
-                style={{ height: 200, width: 200 }}
+                style={{ height: 100, width: 100 }}
               />
             </View>
           )}

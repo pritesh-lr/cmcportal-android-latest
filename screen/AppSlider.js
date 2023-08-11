@@ -50,6 +50,7 @@ class AppSlider extends Component {
     Animated.timing(this.state.fadeAnimation, {
       toValue: 5,
       duration: 4000,
+      useNativeDriver:true,
     }).start();
   }
 
@@ -57,6 +58,7 @@ class AppSlider extends Component {
     Animated.timing(this.state.fadeAnimation, {
       toValue: 1,
       duration: 4000,
+      useNativeDriver: true,
     }).start();
   };
 
@@ -64,11 +66,11 @@ class AppSlider extends Component {
     Animated.timing(this.state.fadeAnimation, {
       toValue: 0,
       duration: 4000,
+      useNativeDriver: true,
     }).start();
   };
 
   renderItem = ({item, index}) => {
-    console.log(this.state.activeIndex);
     const animatedStyle = {top: this.state.posY};
     const animatedStyle2 = {top: this.state.posX};
 
