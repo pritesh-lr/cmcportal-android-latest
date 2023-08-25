@@ -33,7 +33,6 @@ export default function Dashboard() {
   const [modal, setModal] = useState(false);
 
   const handleReload = () => {
-    setVisible(true);
     setUrl("https://www.countymaterials.com/en/portal-dashboard");
   };
 
@@ -97,10 +96,6 @@ export default function Dashboard() {
 		  }
 		window.ReactNativeWebView.postMessage("Hello!");
 	`;
-
-  function hideSpinner() {
-    setVisible(false);
-  }
 
   async function handleLinkPress(url) {
     // console.log("Getting requested url is: ---", url);
@@ -235,7 +230,7 @@ export default function Dashboard() {
             }}
             onLoadEnd={(e) => {
               setUrl(e?.nativeEvent?.url);
-              hideSpinner();
+              setVisible(false);
             }}
           />
         </Fragment>
