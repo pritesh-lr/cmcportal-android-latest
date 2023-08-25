@@ -27,41 +27,14 @@ const Stack = createStackNavigator();
 const { dirs } = RNFetchBlob.fs;
 
 export default function Dashboard() {
+  const webviewRef = useRef(null);
   const [url, setUrl] = useState(`https://www.countymaterials.com/sso`);
-  const [reload, setReload] = useState(false);
   const [visible, setVisible] = useState(true);
   const [modal, setModal] = useState(false);
-  const [authToken, setAuthToken] = useState(undefined);
-  const loaded = useRef(null);
-
-  const webviewRef = useRef(null);
-
-  useEffect(() => {
-    loaded.current = true;
-  }, []);
-
-  const storeData = async (value) => {
-    try {
-      // const jsonValue = JSON.stringify(value)
-      AsyncStorage.setItem("@storage_Key", `${value}`);
-      let user = await AsyncStorage.getItem("@storage_Key");
-      console.log("user", user);
-    } catch (e) {
-      // saving error
-    }
-  };
-
-  useEffect(() => {
-    CookieManager.get("https://www.countymaterials.com").then((res) => {
-      setAuthToken(res);
-    });
-  });
 
   const handleReload = () => {
-    setReload(!reload);
-    setUrl(
-      `https://www.countymaterials.com/en/portal-dashbaord?${Math.random()}`
-    );
+    setVisible(true);
+    setUrl("https://www.countymaterials.com/en/portal-dashboard");
   };
 
   const backButtonHandler = () => {
@@ -130,7 +103,7 @@ export default function Dashboard() {
   }
 
   async function handleLinkPress(url) {
-    console.log("Getting requested url is: ---", url);
+    // console.log("Getting requested url is: ---", url);
     // const fileLink = url.split("/");
     // if (fileLink[fileLink.length - 1] === "file") {
     //   const { dirs } = RNFetchBlob.fs;
@@ -209,6 +182,7 @@ export default function Dashboard() {
                   Toast.LONG,
                   Toast.BOTTOM
                 );
+                setVisible(false);
                 Alert.alert(
                   "Succeed!",
                   "Your file has been downloaded successfully"
@@ -225,7 +199,7 @@ export default function Dashboard() {
     <View style={styles.container}>
       <View style={styles.container}>
         <Fragment>
-          {visible && loaded.current && (
+          {visible && (
             <View
               style={{
                 backgroundColor: "white",
@@ -248,19 +222,20 @@ export default function Dashboard() {
             mixedContentMode={"compatibility"}
             startInLoadingState={true}
             ref={webviewRef}
-            onLoadStart={() => {
-              setVisible(true);
-            }}
             source={{
               uri: url,
             }}
             injectedJavaScript={customScript}
             allowUniversalAccessFromFileURLs={true}
             allowFileAccessFromFileURLs={true}
-            onLoad={hideSpinner}
             onShouldStartLoadWithRequest={(request) => {
+              setVisible(true);
               handleLinkPress(request.url);
               return true;
+            }}
+            onLoadEnd={(e) => {
+              setUrl(e?.nativeEvent?.url);
+              hideSpinner();
             }}
           />
         </Fragment>

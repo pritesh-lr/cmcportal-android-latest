@@ -98,7 +98,7 @@ android {
         applicationId "com.app.cmcexpo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 29
+        versionCode 31
         versionName "1.4"
     }
 
