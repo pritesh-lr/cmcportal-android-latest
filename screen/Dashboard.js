@@ -106,6 +106,8 @@ export default function Dashboard() {
         }
       } else {
         console.log("Content-Disposition header not found");
+        setVisible(false);
+        return;
       }
     } catch (error) {
       console.error("Error:", error);
@@ -119,38 +121,42 @@ export default function Dashboard() {
       const dirToSave =
         Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
       const fileName = await FileDownloadFilename(url);
-      const configs = {
-        useDownloadManager: false,
-        notification: false,
-        mediaScannable: false,
-        title: fileName,
-        path: `${dirToSave}/${fileName}`,
-      };
+      if (fileName) {
+        const configs = {
+          useDownloadManager: false,
+          notification: false,
+          mediaScannable: false,
+          title: fileName,
+          path: `${dirToSave}/${fileName}`,
+        };
 
-      await RNFS?.exists(configs?.path).then(async (exists) => {
-        if (exists) {
-          setVisible(false);
-          Toast.show(`File already exists!`, Toast.LONG, Toast.BOTTOM);
-        } else {
-          await RNFetchBlob?.config(configs)
-            .fetch("GET", url, {})
-            .then((res) => {
-              if (Platform.OS == "android") {
-                Toast.show(
-                  `File downloaded ${configs.path}`,
-                  Toast.LONG,
-                  Toast.BOTTOM
-                );
+        await RNFS?.exists(configs?.path).then(async (exists) => {
+          if (exists) {
+            setVisible(false);
+            Toast.show(`File already exists!`, Toast.LONG, Toast.BOTTOM);
+          } else {
+            await RNFetchBlob?.config(configs)
+              .fetch("GET", url, {})
+              .then((res) => {
+                if (Platform.OS == "android") {
+                  Toast.show(
+                    `File downloaded ${configs.path}`,
+                    Toast.LONG,
+                    Toast.BOTTOM
+                  );
+                  setVisible(false);
+                  Alert.alert(
+                    "Succeed!",
+                    "Your file has been downloaded successfully"
+                  );
+                }
                 setVisible(false);
-                Alert.alert(
-                  "Succeed!",
-                  "Your file has been downloaded successfully"
-                );
-              }
-              setVisible(false);
-            });
-        }
-      });
+              });
+          }
+        });
+      } else {
+        setVisible(false);
+      }
     } else if (url.includes("view=download")) {
       // Multiple file download
       const dirToSave =
@@ -225,6 +231,7 @@ export default function Dashboard() {
             allowUniversalAccessFromFileURLs={true}
             allowFileAccessFromFileURLs={true}
             onShouldStartLoadWithRequest={(request) => {
+              console.log("request.url", request.url);
               setVisible(true);
               handleLinkPress(request.url);
               return true;
