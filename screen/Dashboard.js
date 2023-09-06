@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
-import { createStackNavigator } from "@react-navigation/stack";
-
+import React, { useState, useRef, Fragment } from "react";
 import {
   Image,
   StyleSheet,
@@ -18,11 +16,6 @@ import RNFetchBlob from "rn-fetch-blob";
 var RNFS = require("react-native-fs");
 import FileViewer from "react-native-file-viewer";
 import DocumentPicker from "react-native-document-picker";
-import CookieManager from "../utils/react-native-cookies";
-import { unzip } from "react-native-zip-archive";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import BottomTabNavigator from "../navigation/BottomTabNavigator";
-const Stack = createStackNavigator();
 
 const { dirs } = RNFetchBlob.fs;
 
@@ -97,80 +90,51 @@ export default function Dashboard() {
 		window.ReactNativeWebView.postMessage("Hello!");
 	`;
 
-  async function handleLinkPress(url) {
-    // console.log("Getting requested url is: ---", url);
-    // const fileLink = url.split("/");
-    // if (fileLink[fileLink.length - 1] === "file") {
-    //   const { dirs } = RNFetchBlob.fs;
-    //   const dirToSave =
-    //     Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
-    //   const fileName = `${fileLink[fileLink.length - 2]}.pdf`;
-    //   const configs = {
-    //     useDownloadManager: false,
-    //     notification: true,
-    //     mediaScannable: true,
-    //     title: fileName,
-    //     path: `${dirToSave}/${fileName}`,
-    //   };
-    //   const configOptions = Platform.select({
-    //     ios: {
-    //       title: configs.title,
-    //       path: configs.path,
-    //       appendExt: "pdf",
-    //     },
-    //     android: configs,
-    //   });
+  const FileDownloadFilename = async (url) => {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      if (response.headers.has("content-disposition")) {
+        const contentDisposition = response.headers.get("content-disposition");
+        const filenameMatch = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
+          contentDisposition
+        );
+        if (filenameMatch && filenameMatch[1]) {
+          const filename = filenameMatch[1]
+            .replace(/['"]/g, "")
+            .replace(" ", "_");
+          return filename;
+        }
+      } else {
+        console.log("Content-Disposition header not found");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
-    //   await RNFS.exists(configs?.path).then(async (exists) => {
-    //     if (exists) {
-    //       console.log("File exists!");
-    //     } else {
-    //       await RNFetchBlob.config(configOptions)
-    //         .fetch("GET", url, {
-    //           "content-type": "application/pdf",
-    //         })
-    //         .then((res) => {
-    //           if (Platform.OS === "ios") {
-    //             RNFetchBlob.ios.previewDocument(configs.path);
-    //           }
-    //           if (Platform.OS == "android") {
-    //             console.log("DONWLOAD SUCCESSS");
-    //           }
-    //           console.log("The file saved to ", res);
-    //         });
-    //     }
-    //   });
-    // } else
-    if (url.includes("view=download")) {
+  const handleLinkPress = async (url) => {
+    const fileLink = url.split("/");
+    if (fileLink[fileLink.length - 1] === "file") {
+      // Single file download
       const dirToSave =
         Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
-      const fileName = `${Math.round(+new Date() / 1000)}.zip`;
+      const fileName = await FileDownloadFilename(url);
       const configs = {
         useDownloadManager: false,
-        notification: true,
-        mediaScannable: true,
+        notification: false,
+        mediaScannable: false,
         title: fileName,
         path: `${dirToSave}/${fileName}`,
       };
-      const configOptions = Platform.select({
-        ios: {
-          title: configs.title,
-          path: configs.path,
-          appendExt: "zip",
-        },
-        android: configs,
-      });
 
-      await RNFS.exists(configs?.path).then(async (exists) => {
+      await RNFS?.exists(configs?.path).then(async (exists) => {
         if (exists) {
-          console.log("File exists!");
+          setVisible(false);
+          Toast.show(`File already exists!`, Toast.LONG, Toast.BOTTOM);
         } else {
-          await RNFetchBlob.config(configOptions)
+          await RNFetchBlob?.config(configs)
             .fetch("GET", url, {})
             .then((res) => {
-              if (Platform.OS === "ios") {
-                RNFetchBlob.ios.previewDocument(configs.path);
-              }
               if (Platform.OS == "android") {
                 Toast.show(
                   `File downloaded ${configs.path}`,
@@ -183,12 +147,49 @@ export default function Dashboard() {
                   "Your file has been downloaded successfully"
                 );
               }
-              console.log("The file saved to ", res);
+              setVisible(false);
+            });
+        }
+      });
+    } else if (url.includes("view=download")) {
+      // Multiple file download
+      const dirToSave =
+        Platform.OS == "ios" ? dirs.DocumentDir : dirs.DownloadDir;
+      const fileName = `${Math.round(+new Date() / 1000)}.zip`;
+      const configs = {
+        useDownloadManager: false,
+        notification: false,
+        mediaScannable: true,
+        title: fileName,
+        path: `${dirToSave}/${fileName}`,
+      };
+
+      await RNFS?.exists(configs?.path).then(async (exists) => {
+        if (exists) {
+          setVisible(false);
+          Toast.show(`File already exists!`, Toast.LONG, Toast.BOTTOM);
+        } else {
+          await RNFetchBlob.config(configs)
+            .fetch("GET", url, {})
+            .then((res) => {
+              if (Platform.OS == "android") {
+                Toast.show(
+                  `File downloaded ${configs.path}`,
+                  Toast.LONG,
+                  Toast.BOTTOM
+                );
+                setVisible(false);
+                Alert.alert(
+                  "Succeed!",
+                  "Your file has been downloaded successfully"
+                );
+              }
+              setVisible(false);
             });
         }
       });
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -282,17 +283,6 @@ export default function Dashboard() {
                 </View>
               </View>
             </Modal>
-            {/* <NavigationContainer
-                ref={containerRef}
-                initialState={initialNavigationState}> */}
-            <Stack.Navigator>
-              <Stack.Screen
-                name="County Connect"
-                component={BottomTabNavigator}
-                options={{ headerTitleAlign: "center" }}
-              />
-            </Stack.Navigator>
-            {/* </NavigationContainer> */}
           </View>
         )}
       </View>
